@@ -10,12 +10,14 @@ using System.Windows.Forms;
 using EventEnum = WerewolfClient.WerewolfModel.EventEnum;
 using CommandEnum = WerewolfClient.WerewolfCommand.CommandEnum;
 using WerewolfAPI.Model;
+using WMPLib;
 using Role = WerewolfAPI.Model.Role;
 
 namespace WerewolfClient
 {
     public partial class MainForm : Form, View
     {
+         WindowsMediaPlayer music = new WindowsMediaPlayer();
         private Timer _updateTimer;
         private WerewolfController controller;
         private Game.PeriodEnum _currentPeriod;
@@ -26,10 +28,22 @@ namespace WerewolfClient
         private string _myRole;
         private bool _isDead;
         private List<Player> players = null;
-        public MainForm()
+
+        private Form _login;
+        private Form _roleview;
+        private bool musicIsPlaying = true;
+
+
+        public void LoginForm(Form login)
+        {
+            _login = login;
+        }
+
+        public MainForm(Form roleview)
         {
             InitializeComponent();
-
+            _roleview = roleview;
+            music.URL = "BG.mp3";
             foreach (int i in Enumerable.Range(0, 16))
             {
                 this.Controls["GBPlayers"].Controls["BtnPlayer" + i].Click += new System.EventHandler(this.BtnPlayerX_Click);
@@ -306,9 +320,12 @@ namespace WerewolfClient
 
         private void BtnJoin_Click(object sender, EventArgs e)
         {
+            
             WerewolfCommand wcmd = new WerewolfCommand();
             wcmd.Action = CommandEnum.JoinGame;
             controller.ActionPerformed(wcmd);
+            BtnLeave.Visible = true;
+            BtnLogout.Visible = false;
         }
 
         private void BtnVote_Click(object sender, EventArgs e)
@@ -399,5 +416,51 @@ namespace WerewolfClient
                 controller.ActionPerformed(wcmd);
             }
         }
+
+        private void BtnLogout_Click(object sender, EventArgs e) /// add LogOut
+        {
+
+            WerewolfCommand wcmd = new WerewolfCommand();
+            wcmd.Action = CommandEnum.SignOut;
+            controller.ActionPerformed(wcmd);
+            this.Visible = false;
+            _login.Visible = true;
+            TbChatBox.Text = "";
+            _updateTimer.Enabled = false;
+
+        }
+
+        private void BtnLeave_Click(object sender, EventArgs e) /// add Leave
+        {
+            AddChatMessage("You're Leaving the current game ");
+            WerewolfCommand wcmd = new WerewolfCommand();
+            wcmd.Action = CommandEnum.LeaveGame;
+            controller.ActionPerformed(wcmd);
+            BtnLeave.Visible = false;
+            BtnLogout.Visible = true;
+            BtnJoin.Visible = true;
+            _updateTimer.Enabled = false;
+        }
+
+        private void BtnRoleInfo_Click(object sender, EventArgs e) ///add RoleInfo
+        {   
+            _roleview.Visible = true;
+        }
+
+        private void Musicbtn_Click(object sender, EventArgs e) //add music control
+        {
+            if (musicIsPlaying == false)
+            {
+                music.controls.play();
+                musicIsPlaying = true;
+            }
+            else
+            {
+                music.controls.stop();
+                musicIsPlaying = false;
+            }
+        }
+
+       
     }
 }

@@ -14,27 +14,30 @@ namespace WerewolfClient
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                RoleView mRoleView = new RoleView();
+                MainForm mMainForm = new MainForm(mRoleView);
+                mMainForm.Visible = false;
+                Login mLogin = new Login(mMainForm);
+                mMainForm.LoginForm(mLogin); // add Login form to mainform
+                WerewolfController mControler = WerewolfController.GetInstance();
+                WerewolfModel mModel = new WerewolfModel();
 
-            MainForm mMainForm = new MainForm();
-            mMainForm.Visible = false;
-            Login mLogin = new Login(mMainForm);
-            WerewolfController mControler =  WerewolfController.GetInstance();
-            WerewolfModel mModel = new WerewolfModel();
+                // View -> Controller
+                mMainForm.setController(mControler);
+                mLogin.setController(mControler);
 
-            // View -> Controller
-            mMainForm.setController(mControler);
-            mLogin.setController(mControler);
+                // Controler -> Model
+                mControler.AddModel(mModel);
 
-            // Controler -> Model
-            mControler.AddModel(mModel);
+                // Model -> View
+                mModel.AttachObserver(mLogin);
+                mModel.AttachObserver(mMainForm);
 
-            // Model -> View
-            mModel.AttachObserver(mLogin);
-            mModel.AttachObserver(mMainForm);
-
-            Application.Run(mLogin);
+                Application.Run(mLogin);
+            
         }
     }
 }

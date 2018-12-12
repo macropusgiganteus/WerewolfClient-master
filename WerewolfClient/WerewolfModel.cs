@@ -43,7 +43,7 @@ namespace WerewolfClient
         {
             NOP = 1,
             SignUp = 2,
-            SignIn = 3,
+            SignIn = 3,         
             JoinGame = 4,
             GameStarted = 5,
             GameStopped = 6,
@@ -58,6 +58,9 @@ namespace WerewolfClient
             Alive = 15,
             Chat = 16,
             ChatMessage = 17,
+            //add SignOut,LeaveGame
+            SignOut = 18,
+            LeaveGame = 19,
         }
         public const string ROLE_SEER = "Seer";
         public const string ROLE_AURA_SEER = "Aura Seer";
@@ -73,8 +76,6 @@ namespace WerewolfClient
         public const string ROLE_FOOL = "Fool";
         public const string ROLE_HEAD_HUNTER = "Head Hunter";
         public const string ROLE_SERIAL_KILLER = "Serial Killer";
-
-
         public const string ROLE_GUNNER = "Gunner";
 
         public const string ACTION_DAY_VOTE = "Day Vote";
@@ -97,7 +98,7 @@ namespace WerewolfClient
 
         private Boolean _isPlaying = false;
         // default base path
-        private const string BASE_PATH = "http://localhost:2343/werewolf/";
+        private const string BASE_PATH = "http://project-ile.net:2342/werewolf/"; //2 players server
         private Action _dayVoteAction = null;
         private Action _nightVoteAction = null;
         private Action _playerAction = null;
@@ -152,7 +153,7 @@ namespace WerewolfClient
                 {
                     if (_game.Status == Game.StatusEnum.Playing)
                     {
-                        // game is tarted, switch to game mode
+                        // game is started, switch to game mode
                         Console.WriteLine("Game #{0} is started, switch to game mode.", _game.Id);
                         _isPlaying = true;
                         _currentPeriod = _game.Period;
@@ -331,9 +332,11 @@ namespace WerewolfClient
         {
             if (_player == null)
             {
-                _event = EventEnum.JoinGame;
-                _eventPayloads["Success"] = FALSE;
-                _eventPayloads["Error"] = "Sign in first";
+                
+                    _event = EventEnum.JoinGame;
+                    _eventPayloads["Success"] = FALSE;
+                    _eventPayloads["Error"] = "Sign in first";
+               
             }
             try
             {
@@ -388,8 +391,7 @@ namespace WerewolfClient
             {
                 PlayerApi playerEP = new PlayerApi(server);
                 Player p = new Player(null, login, password, null, null, null, Player.StatusEnum.Offline);
-                _player = playerEP.AddPlayer(p);
-
+                _player = playerEP.AddPlayer(p);    
                 Console.WriteLine(_player.Id);
                 _event = EventEnum.SignIn;
                 _eventPayloads["Success"] = TRUE;
@@ -484,6 +486,21 @@ namespace WerewolfClient
             //reset event
             _event = EventEnum.NOP;
             _eventPayloads.Clear();
+        }
+
+        public void LeaveGame() ///add LeaveGame
+        {
+            
+            _player.Status = Player.StatusEnum.Notingame;
+            _game = null;
+            NotifyAll();
+        }
+        public void SignOut() /// add SignOut
+        {
+            _player.Status = Player.StatusEnum.Offline;
+            _game = null;
+            _player = null;
+            NotifyAll();
         }
     }
 }
